@@ -27,9 +27,12 @@ jobs:
           use-public-rspm: true   # usa binarios precompilados -> instalación mucho más rápida
 
       - name: Instalar dependencias de R
-        run: |
-          install.packages(c("baseballr", "dplyr", "jsonlite"), repos = "https://cloud.r-project.org")
-        shell: Rscript {0}
+        uses: r-lib/actions/setup-r-dependencies@v2
+        with:
+          packages: |
+            any::baseballr
+            any::dplyr
+            any::jsonlite
 
       - name: Descargar datos de FanGraphs
         run: Rscript scripts/fetch_stats.R
