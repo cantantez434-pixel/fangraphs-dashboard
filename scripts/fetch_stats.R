@@ -12,7 +12,11 @@
 pkgs <- c("baseballr", "dplyr", "jsonlite")
 to_install <- pkgs[!pkgs %in% rownames(installed.packages())]
 if (length(to_install) > 0) {
-  install.packages(to_install, repos = "https://cloud.r-project.org")
+  # Sin decidir repos acá a propósito: en GitHub Actions ya quedaron instalados
+  # por el paso "setup-r-dependencies" del workflow, así que esto no debería
+  # ejecutarse ahí. Si corrés el script en tu compu y te falta algo, esto usa
+  # el mirror de CRAN que tengas configurado por defecto.
+  install.packages(to_install)
 }
 
 suppressPackageStartupMessages({
@@ -26,10 +30,11 @@ SEASON  <- as.integer(format(Sys.Date(), "%Y"))
 OUT_DIR <- "site/data"
 TODAY   <- Sys.Date()
 
-# Umbrales mínimos por ventana. En una ventana de 7 días nadie llega a 50 PA,
-# así que cada período tiene su propio mínimo razonable (ajustable).
-MIN_PA  <- list(season = 50, d7 = 10, d14 = 20)
-MIN_IP  <- list(season = 20, d7 = 3,  d14 = 6)
+# Sin mínimo: se muestran todos los bateadores/pitchers con al menos 1 PA/IP
+# registrado en la ventana. Ojo: con muestras muy chicas (ej. 1 PA, 0.1 IP),
+# SIERA y wRC+ pueden salir con valores extremos que no significan mucho.
+MIN_PA  <- list(season = 0, d7 = 0, d14 = 0)
+MIN_IP  <- list(season = 0, d7 = 0, d14 = 0)
 
 WINDOWS <- list(
   d7  = list(start = TODAY - 6,  end = TODAY),
