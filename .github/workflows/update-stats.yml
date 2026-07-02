@@ -1,0 +1,43 @@
+name: Actualizar stats de FanGraphs
+
+on:
+  schedule:
+    # 09:00 UTC todos los días. Ajustá según cuándo querés que se actualice.
+    - cron: "0 9 * * *"
+  workflow_dispatch: {}   # permite correrlo manualmente desde la pestaña Actions
+
+concurrency:
+  group: update-stats
+  cancel-in-progress: false
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up R
+        uses: r-lib/actions/setup-r@v2
+        with:
+          r-version: "release"
+          use-public-rspm: true   # usa binarios precompilados -> instalación mucho más rápida
+
+      - name: Instalar dependencias de R
+        run: |
+          install.packages(c("baseballr", "dplyr", "jsonlite"), repos = "https://cloud.r-project.org")
+        shell: Rscript {0}
+
+      - name: Descargar datos de FanGraphs
+        run: Rscript scripts/fetch_stats.R
+
+      - name: Commit y push si hubo cambios
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add site/data/*.json
+          git diff --staged --quiet || git commit -m "Actualizar stats de FanGraphs [automático]"
+          git push
