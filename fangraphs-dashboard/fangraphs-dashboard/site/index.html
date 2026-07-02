@@ -1,0 +1,342 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Marcador — Líderes de wRC+ y SIERA</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=JetBrains+Mono:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#F2EEE2;
+    --panel:#FBF8EF;
+    --ink:#16232E;
+    --ink-soft:#5B6B78;
+    --grass:#2F5233;
+    --clay:#B5511F;
+    --amber:#E8A33D;
+    --hairline:#DCD4BE;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',sans-serif;
+    -webkit-font-smoothing:antialiased;
+  }
+  .wrap{max-width:1180px;margin:0 auto;padding:48px 24px 96px;}
+
+  header.top{
+    display:flex; align-items:flex-end; justify-content:space-between;
+    flex-wrap:wrap; gap:16px;
+    border-bottom:2px solid var(--ink);
+    padding-bottom:20px; margin-bottom:36px;
+  }
+  .brand{display:flex; flex-direction:column; gap:4px;}
+  .brand .eyebrow{
+    font-family:'JetBrains Mono',monospace; font-size:12px; letter-spacing:.14em;
+    text-transform:uppercase; color:var(--clay); font-weight:700;
+  }
+  h1{
+    font-family:'Fraunces',serif; font-weight:700; font-size:clamp(34px,5vw,54px);
+    margin:0; line-height:1;
+  }
+  .subtitle{font-size:14px; color:var(--ink-soft); margin-top:2px;}
+  .clock{
+    font-family:'JetBrains Mono',monospace; text-align:right;
+    background:var(--ink); color:var(--paper); padding:10px 16px; border-radius:4px;
+    font-size:11px; line-height:1.6;
+  }
+  .clock b{display:block; font-size:14px; letter-spacing:.02em;}
+
+  .period-row{
+    display:flex; align-items:center; justify-content:space-between;
+    flex-wrap:wrap; gap:10px; margin-bottom:28px;
+  }
+  .period-toggle{
+    display:inline-flex; border:1px solid var(--ink); border-radius:5px; overflow:hidden;
+  }
+  .period-toggle button{
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:500;
+    background:var(--panel); color:var(--ink); border:none; padding:9px 16px;
+    cursor:pointer; border-right:1px solid var(--ink);
+  }
+  .period-toggle button:last-child{border-right:none;}
+  .period-toggle button.active{background:var(--ink); color:var(--paper); font-weight:700;}
+  .period-toggle button:hover:not(.active){background:var(--hairline);}
+  .period-range{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-soft);}
+
+  .grid{
+    display:grid; grid-template-columns:1fr 1fr; gap:28px;
+  }
+  @media (max-width:880px){ .grid{grid-template-columns:1fr;} }
+
+  .panel{
+    background:var(--panel); border:1px solid var(--hairline); border-radius:6px;
+    overflow:hidden; opacity:0; transform:translateY(10px);
+    animation:rise .5s ease forwards;
+  }
+  .panel:nth-child(2){animation-delay:.08s;}
+  @keyframes rise{to{opacity:1; transform:translateY(0);}}
+  @media (prefers-reduced-motion:reduce){ .panel{animation:none; opacity:1; transform:none;} }
+
+  .panel-head{
+    padding:20px 22px 16px; border-bottom:1px solid var(--hairline);
+    display:flex; align-items:baseline; justify-content:space-between;
+  }
+  .panel-head h2{
+    font-family:'Fraunces',serif; font-size:22px; margin:0; font-weight:600;
+  }
+  .panel-head span{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-soft);}
+  .panel.bat .panel-head{border-top:4px solid var(--grass);}
+  .panel.pit .panel-head{border-top:4px solid var(--clay);}
+
+  table{width:100%; border-collapse:collapse; font-size:13px;}
+  thead th{
+    text-align:left; font-family:'JetBrains Mono',monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.06em; color:var(--ink-soft);
+    padding:10px 12px; cursor:pointer; user-select:none; white-space:nowrap;
+    border-bottom:1px solid var(--hairline);
+  }
+  thead th:hover{color:var(--ink);}
+  thead th.active{color:var(--ink); font-weight:700;}
+  thead th:focus-visible{outline:2px solid var(--clay); outline-offset:-2px;}
+  tbody td{padding:10px 12px; border-bottom:1px solid var(--hairline); vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr:hover{background:rgba(0,0,0,.025);}
+
+  .rank{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:26px; height:26px; background:var(--ink); color:var(--paper);
+    font-family:'JetBrains Mono',monospace; font-weight:700; font-size:12px;
+    border-radius:3px; position:relative; flex:none;
+  }
+  .rank::after{content:"";position:absolute;left:2px;right:2px;top:50%;height:1px;background:rgba(242,238,226,.35);}
+  .name{font-weight:600;}
+  .team{color:var(--ink-soft); font-size:12px;}
+  .lead-tag{
+    font-family:'JetBrains Mono',monospace; font-size:9px; font-weight:700;
+    letter-spacing:.08em; color:#fff; background:var(--amber);
+    padding:2px 6px; border-radius:3px; text-transform:uppercase;
+    margin-left:6px;
+  }
+  .stat-main{font-family:'JetBrains Mono',monospace; font-weight:700; font-size:14px;}
+  .panel.bat .stat-main{color:var(--grass);}
+  .panel.pit .stat-main{color:var(--clay);}
+  .stat-sub{font-family:'JetBrains Mono',monospace; color:var(--ink-soft); font-size:12px;}
+
+  .empty{
+    padding:56px 24px; text-align:center; color:var(--ink-soft);
+    font-family:'JetBrains Mono',monospace; font-size:13px; line-height:1.8;
+  }
+  .empty b{display:block; font-family:'Fraunces',serif; font-size:18px; color:var(--ink); margin-bottom:8px; font-weight:600;}
+
+  footer{
+    margin-top:40px; font-size:12px; color:var(--ink-soft);
+    font-family:'JetBrains Mono',monospace; text-align:center;
+  }
+  footer a{color:var(--clay);}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <div class="brand">
+      <span class="eyebrow">FanGraphs · Temporada en curso</span>
+      <h1>Marcador</h1>
+      <div class="subtitle">Líderes de wRC+ (bateo) y SIERA (pitcheo)</div>
+    </div>
+    <div class="clock">
+      <b id="clock-time">— — —</b>
+      actualizado
+    </div>
+  </header>
+
+  <div class="period-row">
+    <div class="period-toggle" id="period-toggle">
+      <button data-period="season" class="active">Temporada</button>
+      <button data-period="d7">Últimos 7 días</button>
+      <button data-period="d14">Últimos 14 días</button>
+    </div>
+    <div class="period-range" id="period-range"></div>
+  </div>
+
+  <div class="grid">
+    <section class="panel bat" id="panel-bat">
+      <div class="panel-head">
+        <h2>Bateo</h2>
+        <span>wRC+</span>
+      </div>
+      <div id="bat-body"></div>
+    </section>
+
+    <section class="panel pit" id="panel-pit">
+      <div class="panel-head">
+        <h2>Pitcheo</h2>
+        <span>SIERA</span>
+      </div>
+      <div id="pit-body"></div>
+    </section>
+  </div>
+
+  <footer>
+    Datos de FanGraphs.com vía <a href="https://github.com/BillPetti/baseballr" target="_blank" rel="noopener">baseballr</a> · actualización automática
+  </footer>
+</div>
+
+<script>
+const BAT_COLS = [
+  {key:'wrc_plus', label:'wRC+', dir:-1, fmt:v=>Math.round(v)},
+  {key:'pa',       label:'PA',   dir:-1, fmt:v=>Math.round(v)},
+  {key:'woba',     label:'wOBA', dir:-1, fmt:v=>v.toFixed(3)},
+  {key:'war',      label:'WAR',  dir:-1, fmt:v=>v.toFixed(1)},
+];
+const PIT_COLS = [
+  {key:'siera', label:'SIERA', dir:1,  fmt:v=>v.toFixed(2)},
+  {key:'ip',    label:'IP',    dir:-1, fmt:v=>v.toFixed(1)},
+  {key:'era',   label:'ERA',   dir:1,  fmt:v=>v.toFixed(2)},
+  {key:'fip',   label:'FIP',   dir:1,  fmt:v=>v.toFixed(2)},
+  {key:'war',   label:'WAR',   dir:-1, fmt:v=>v.toFixed(1)},
+];
+
+const PERIOD_FILES = {
+  season: {bat:'batters_season.json', pit:'pitchers_season.json'},
+  d7:     {bat:'batters_7d.json',     pit:'pitchers_7d.json'},
+  d14:    {bat:'batters_14d.json',    pit:'pitchers_14d.json'},
+};
+
+let sortState = {
+  bat: {key:'wrc_plus', dir:-1},
+  pit: {key:'siera',    dir:1},
+};
+let datasets = {season:{bat:[],pit:[]}, d7:{bat:[],pit:[]}, d14:{bat:[],pit:[]}};
+let currentPeriod = 'season';
+let meta = null;
+
+async function loadJSON(path){
+  try{
+    const res = await fetch(path, {cache:'no-store'});
+    if(!res.ok) throw new Error(res.status);
+    return await res.json();
+  }catch(e){
+    return null;
+  }
+}
+
+function emptyState(label){
+  return `<div class="empty"><b>Sin datos todavía</b>Ejecutá el workflow de GitHub Actions<br>(o esperá la próxima corrida programada)<br>para cargar los líderes de ${label}.</div>`;
+}
+
+function renderTable(containerId, cols, mainCol, data, tableState, label){
+  const el = document.getElementById(containerId);
+  const rows = [...data].sort((a,b)=>(a[tableState.key]-b[tableState.key]) * tableState.dir);
+
+  if(rows.length === 0){
+    el.innerHTML = emptyState(label);
+    return;
+  }
+
+  let thead = '<thead><tr><th></th><th>Jugador</th>';
+  cols.forEach(c=>{
+    const active = c.key === tableState.key ? 'active' : '';
+    const arrow = c.key === tableState.key ? (tableState.dir===1?' ↑':' ↓') : '';
+    thead += `<th class="${active}" data-key="${c.key}" tabindex="0" role="button">${c.label}${arrow}</th>`;
+  });
+  thead += '</tr></thead>';
+
+  let tbody = '<tbody>';
+  rows.forEach((r,i)=>{
+    tbody += `<tr><td><span class="rank">${i+1}</span></td>`;
+    tbody += `<td><div class="name">${r.player}${i===0?'<span class="lead-tag">Líder</span>':''}</div><div class="team">${r.team}</div></td>`;
+    cols.forEach(c=>{
+      const val = r[c.key];
+      const cls = c.key === mainCol ? 'stat-main' : 'stat-sub';
+      tbody += `<td class="${cls}">${val==null ? '—' : c.fmt(val)}</td>`;
+    });
+    tbody += '</tr>';
+  });
+  tbody += '</tbody>';
+
+  el.innerHTML = `<table>${thead}${tbody}</table>`;
+
+  el.querySelectorAll('th[data-key]').forEach(th=>{
+    const trigger = ()=>{
+      const key = th.dataset.key;
+      if(tableState.key === key){
+        tableState.dir *= -1;
+      } else {
+        tableState.key = key;
+        tableState.dir = cols.find(c=>c.key===key).dir;
+      }
+      renderAll();
+    };
+    th.addEventListener('click', trigger);
+    th.addEventListener('keydown', e=>{ if(e.key==='Enter' || e.key===' '){ e.preventDefault(); trigger(); } });
+  });
+}
+
+function formatDate(iso){
+  if(!iso) return '';
+  const [y,m,d] = iso.split('-');
+  return `${d}/${m}`;
+}
+
+function updatePeriodRange(){
+  const rangeEl = document.getElementById('period-range');
+  if(currentPeriod === 'season'){
+    rangeEl.textContent = meta && meta.season ? `Temporada ${meta.season}` : '';
+  } else if(meta && meta.windows && meta.windows[currentPeriod]){
+    const w = meta.windows[currentPeriod];
+    rangeEl.textContent = `${formatDate(w.start)} – ${formatDate(w.end)}`;
+  } else {
+    rangeEl.textContent = '';
+  }
+}
+
+function renderAll(){
+  const d = datasets[currentPeriod];
+  const label = currentPeriod === 'season' ? 'temporada' : currentPeriod === 'd7' ? 'los últimos 7 días' : 'los últimos 14 días';
+  renderTable('bat-body', BAT_COLS, 'wrc_plus', d.bat, sortState.bat, label);
+  renderTable('pit-body', PIT_COLS, 'siera', d.pit, sortState.pit, label);
+  updatePeriodRange();
+}
+
+(async function init(){
+  const [metaRes, batSeason, pitSeason, bat7, pit7, bat14, pit14] = await Promise.all([
+    loadJSON('./data/meta.json'),
+    loadJSON('./data/' + PERIOD_FILES.season.bat),
+    loadJSON('./data/' + PERIOD_FILES.season.pit),
+    loadJSON('./data/' + PERIOD_FILES.d7.bat),
+    loadJSON('./data/' + PERIOD_FILES.d7.pit),
+    loadJSON('./data/' + PERIOD_FILES.d14.bat),
+    loadJSON('./data/' + PERIOD_FILES.d14.pit),
+  ]);
+
+  meta = metaRes;
+  datasets.season = {bat: batSeason || [], pit: pitSeason || []};
+  datasets.d7      = {bat: bat7 || [],      pit: pit7 || []};
+  datasets.d14      = {bat: bat14 || [],     pit: pit14 || []};
+
+  const clockTime = document.getElementById('clock-time');
+  if(meta && meta.updated_at){
+    const d = new Date(meta.updated_at);
+    clockTime.textContent = d.toLocaleString('es', {dateStyle:'medium', timeStyle:'short'});
+  } else {
+    clockTime.textContent = 'sin datos';
+  }
+
+  document.querySelectorAll('#period-toggle button').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      currentPeriod = btn.dataset.period;
+      document.querySelectorAll('#period-toggle button').forEach(b=>b.classList.toggle('active', b===btn));
+      renderAll();
+    });
+  });
+
+  renderAll();
+})();
+</script>
+</body>
+</html>

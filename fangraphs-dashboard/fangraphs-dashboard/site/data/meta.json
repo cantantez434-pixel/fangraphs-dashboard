@@ -1,0 +1,13 @@
+{
+  "season": null,
+  "updated_at": null,
+  "windows": {
+    "d7":  {"start": null, "end": null},
+    "d14": {"start": null, "end": null}
+  },
+  "counts": {
+    "season": {"batters": 0, "pitchers": 0},
+    "d7":      {"batters": 0, "pitchers": 0},
+    "d14":     {"batters": 0, "pitchers": 0}
+  }
+}
