@@ -68,6 +68,17 @@
   .period-toggle button:hover:not(.active){background:var(--hairline);}
   .period-range{font-family:'JetBrains Mono',monospace; font-size:12px; color:var(--ink-soft);}
 
+  .controls-right{display:flex; align-items:center; gap:14px; flex-wrap:wrap;}
+  .team-select{
+    font-family:'JetBrains Mono',monospace; font-size:12px; font-weight:500;
+    background:var(--panel); color:var(--ink); border:1px solid var(--ink);
+    border-radius:5px; padding:8px 30px 8px 12px; cursor:pointer;
+    appearance:none; -webkit-appearance:none;
+    background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath fill='%2316232E' d='M2 4l4 4 4-4'/%3E%3C/svg%3E");
+    background-repeat:no-repeat; background-position:right 10px center;
+  }
+  .team-select:hover{background-color:var(--hairline);}
+
   .grid{
     display:grid; grid-template-columns:1fr 1fr; gap:28px;
   }
@@ -160,7 +171,12 @@
       <button data-period="d7">Últimos 7 días</button>
       <button data-period="d14">Últimos 14 días</button>
     </div>
-    <div class="period-range" id="period-range"></div>
+    <div class="controls-right">
+      <select id="team-select" class="team-select">
+        <option value="ALL">Todos los equipos</option>
+      </select>
+      <div class="period-range" id="period-range"></div>
+    </div>
   </div>
 
   <div class="grid">
@@ -213,6 +229,7 @@ let sortState = {
 };
 let datasets = {season:{bat:[],pit:[]}, d7:{bat:[],pit:[]}, d14:{bat:[],pit:[]}};
 let currentPeriod = 'season';
+let currentTeam = 'ALL';
 let meta = null;
 
 async function loadJSON(path){
@@ -297,10 +314,32 @@ function updatePeriodRange(){
 
 function renderAll(){
   const d = datasets[currentPeriod];
+  const filterTeam = row => currentTeam === 'ALL' || row.team === currentTeam;
+  const bat = d.bat.filter(filterTeam);
+  const pit = d.pit.filter(filterTeam);
   const label = currentPeriod === 'season' ? 'temporada' : currentPeriod === 'd7' ? 'los últimos 7 días' : 'los últimos 14 días';
-  renderTable('bat-body', BAT_COLS, 'wrc_plus', d.bat, sortState.bat, label);
-  renderTable('pit-body', PIT_COLS, 'siera', d.pit, sortState.pit, label);
+  renderTable('bat-body', BAT_COLS, 'wrc_plus', bat, sortState.bat, label);
+  renderTable('pit-body', PIT_COLS, 'siera', pit, sortState.pit, label);
   updatePeriodRange();
+}
+
+function populateTeamSelect(){
+  const teams = new Set();
+  Object.values(datasets).forEach(period=>{
+    period.bat.forEach(r=>teams.add(r.team));
+    period.pit.forEach(r=>teams.add(r.team));
+  });
+  const select = document.getElementById('team-select');
+  [...teams].sort().forEach(team=>{
+    const opt = document.createElement('option');
+    opt.value = team;
+    opt.textContent = team;
+    select.appendChild(opt);
+  });
+  select.addEventListener('change', ()=>{
+    currentTeam = select.value;
+    renderAll();
+  });
 }
 
 (async function init(){
@@ -318,6 +357,8 @@ function renderAll(){
   datasets.season = {bat: batSeason || [], pit: pitSeason || []};
   datasets.d7      = {bat: bat7 || [],      pit: pit7 || []};
   datasets.d14      = {bat: bat14 || [],     pit: pit14 || []};
+
+  populateTeamSelect();
 
   const clockTime = document.getElementById('clock-time');
   if(meta && meta.updated_at){
